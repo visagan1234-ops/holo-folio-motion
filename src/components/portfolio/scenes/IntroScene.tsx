@@ -60,14 +60,14 @@ export const IntroScene = ({ userData, isActive }: IntroSceneProps) => {
         </Float>
       ))}
 
-      {/* Name text */}
+      {/* Name text - with fallback */}
       <Center position={[0, 3, 0]}>
         <Text3D
           font="/fonts/helvetiker_regular.typeface.json"
           size={0.8}
           height={0.1}
           curveSegments={12}
-          bevelEnabled
+          bevelEnabled={true}
           bevelThickness={0.02}
           bevelSize={0.02}
           bevelOffset={0}

@@ -1,12 +1,8 @@
 import { Suspense, useRef, useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera, Environment, Text3D, Center, Float, Sphere, Box } from "@react-three/drei";
+import { OrbitControls, PerspectiveCamera, Environment, Center, Float, Sphere, Text } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
 import * as THREE from "three";
-import { IntroScene } from "./scenes/IntroScene";
-import { SkillsScene } from "./scenes/SkillsScene";
-import { ProjectsScene } from "./scenes/ProjectsScene";
-import { ContactScene } from "./scenes/ContactScene";
 import { Button } from "../ui/button";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
 
@@ -26,12 +22,268 @@ interface Portfolio3DProps {
   };
 }
 
+// Simple text-based scenes to avoid font loading issues
+const IntroScene = ({ userData }: { userData: Portfolio3DProps['userData'] }) => {
+  const groupRef = useRef<THREE.Group>(null);
+
+  return (
+    <group ref={groupRef}>
+      {/* Central holographic sphere */}
+      <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
+        <Sphere args={[2]} position={[0, 0, -2]}>
+          <meshStandardMaterial
+            color="#00ffff"
+            transparent
+            opacity={0.1}
+            wireframe
+            emissive="#00ffff"
+            emissiveIntensity={0.2}
+          />
+        </Sphere>
+      </Float>
+
+      {/* Name text using regular Text component */}
+      <Center position={[0, 3, 0]}>
+        <Text
+          fontSize={0.8}
+          color="#00ffff"
+          anchorX="center"
+          anchorY="middle"
+        >
+          {userData.name}
+          <meshStandardMaterial
+            emissive="#00ffff"
+            emissiveIntensity={0.3}
+          />
+        </Text>
+      </Center>
+
+      {/* Title text */}
+      <Center position={[0, 1.5, 0]}>
+        <Text
+          fontSize={0.4}
+          color="#ff00ff"
+          anchorX="center"
+          anchorY="middle"
+        >
+          {userData.title}
+          <meshStandardMaterial
+            emissive="#ff00ff"
+            emissiveIntensity={0.2}
+          />
+        </Text>
+      </Center>
+
+      {/* Field text */}
+      <Center position={[0, 0.5, 0]}>
+        <Text
+          fontSize={0.3}
+          color="#ffffff"
+          anchorX="center"
+          anchorY="middle"
+        >
+          {userData.field}
+          <meshStandardMaterial
+            emissive="#ffffff"
+            emissiveIntensity={0.1}
+          />
+        </Text>
+      </Center>
+
+      {/* Animated rings around sphere */}
+      {Array.from({ length: 3 }).map((_, i) => (
+        <Float key={i} speed={1 + i * 0.5} rotationIntensity={1}>
+          <mesh rotation={[Math.PI / 2, 0, i * Math.PI / 3]} position={[0, 0, -2]}>
+            <torusGeometry args={[2.5 + i * 0.5, 0.02, 16, 100]} />
+            <meshStandardMaterial
+              color="#ff00ff"
+              emissive="#ff00ff"
+              emissiveIntensity={0.3}
+              transparent
+              opacity={0.6}
+            />
+          </mesh>
+        </Float>
+      ))}
+
+      {/* Holographic grid plane */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -3, -2]}>
+        <planeGeometry args={[20, 20, 32, 32]} />
+        <meshStandardMaterial
+          color="#00ffff"
+          transparent
+          opacity={0.1}
+          wireframe
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+    </group>
+  );
+};
+
+const SkillsScene = ({ userData }: { userData: Portfolio3DProps['userData'] }) => {
+  const skills = userData.skills.slice(0, 6);
+
+  return (
+    <group>
+      <Center position={[0, 4, 0]}>
+        <Text
+          fontSize={0.6}
+          color="#00ffff"
+          anchorX="center"
+          anchorY="middle"
+        >
+          Technical Skills
+        </Text>
+      </Center>
+
+      {skills.map((skill, index) => {
+        const angle = (index / skills.length) * Math.PI * 2;
+        const radius = 4;
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
+
+        return (
+          <group key={skill} position={[x, 0, z]}>
+            <Float speed={1 + index * 0.2} rotationIntensity={0.3} floatIntensity={0.5}>
+              <Sphere args={[0.8]}>
+                <meshStandardMaterial
+                  color={index % 3 === 0 ? "#00ffff" : index % 3 === 1 ? "#ff00ff" : "#ffff00"}
+                  emissive={index % 3 === 0 ? "#00ffff" : index % 3 === 1 ? "#ff00ff" : "#ffff00"}
+                  emissiveIntensity={0.2}
+                  transparent
+                  opacity={0.7}
+                />
+              </Sphere>
+            </Float>
+
+            <Center position={[0, -1.5, 0]}>
+              <Text
+                fontSize={0.2}
+                color="#ffffff"
+                anchorX="center"
+                anchorY="middle"
+              >
+                {skill}
+              </Text>
+            </Center>
+          </group>
+        );
+      })}
+    </group>
+  );
+};
+
+const ProjectsScene = ({ userData }: { userData: Portfolio3DProps['userData'] }) => {
+  const projects = userData.projects.slice(0, 4);
+
+  return (
+    <group>
+      <Center position={[0, 4, 0]}>
+        <Text
+          fontSize={0.6}
+          color="#ff00ff"
+          anchorX="center"
+          anchorY="middle"
+        >
+          Featured Projects
+        </Text>
+      </Center>
+
+      {projects.map((project, index) => {
+        const angle = (index / projects.length) * Math.PI * 2;
+        const radius = 4;
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
+
+        return (
+          <group key={project.name} position={[x, 0, z]}>
+            <Float speed={0.5} rotationIntensity={0.2} floatIntensity={0.3}>
+              <mesh>
+                <boxGeometry args={[3, 2, 0.1]} />
+                <meshStandardMaterial
+                  color="#000000"
+                  emissive="#00ffff"
+                  emissiveIntensity={0.1}
+                  transparent
+                  opacity={0.8}
+                />
+              </mesh>
+            </Float>
+
+            <Center position={[0, 1.2, 0.1]}>
+              <Text
+                fontSize={0.15}
+                color="#ffffff"
+                anchorX="center"
+                anchorY="middle"
+              >
+                {project.name}
+              </Text>
+            </Center>
+          </group>
+        );
+      })}
+    </group>
+  );
+};
+
+const ContactScene = ({ userData }: { userData: Portfolio3DProps['userData'] }) => {
+  return (
+    <group>
+      <Center position={[0, 4, 0]}>
+        <Text
+          fontSize={0.7}
+          color="#00ff00"
+          anchorX="center"
+          anchorY="middle"
+        >
+          Let's Connect
+        </Text>
+      </Center>
+
+      <Float speed={1} rotationIntensity={0.5} floatIntensity={0.3}>
+        <Sphere args={[1.5]} position={[0, 0, 0]}>
+          <meshStandardMaterial
+            color="#00ff00"
+            emissive="#00ff00"
+            emissiveIntensity={0.2}
+            transparent
+            opacity={0.6}
+            wireframe
+          />
+        </Sphere>
+      </Float>
+
+      <Center position={[0, -2, 0]}>
+        <Text
+          fontSize={0.3}
+          color="#ffffff"
+          anchorX="center"
+          anchorY="middle"
+        >
+          {userData.email}
+        </Text>
+      </Center>
+
+      <Center position={[0, -3, 0]}>
+        <Text
+          fontSize={0.3}
+          color="#0077b5"
+          anchorX="center"
+          anchorY="middle"
+        >
+          {userData.linkedin}
+        </Text>
+      </Center>
+    </group>
+  );
+};
+
 export const Portfolio3D = ({ userData }: Portfolio3DProps) => {
   const [currentScene, setCurrentScene] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const scenes = [
     { component: IntroScene, name: "Introduction", duration: 6000 },
@@ -40,17 +292,12 @@ export const Portfolio3D = ({ userData }: Portfolio3DProps) => {
     { component: ContactScene, name: "Contact", duration: 4000 }
   ];
 
-  const totalDuration = scenes.reduce((acc, scene) => acc + scene.duration, 0);
-
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
     if (isPlaying) {
       interval = setInterval(() => {
-        setCurrentScene((prev) => {
-          const next = (prev + 1) % scenes.length;
-          return next;
-        });
+        setCurrentScene((prev) => (prev + 1) % scenes.length);
       }, scenes[currentScene]?.duration || 6000);
     }
 
@@ -62,42 +309,18 @@ export const Portfolio3D = ({ userData }: Portfolio3DProps) => {
   const startPresentation = () => {
     setIsPlaying(true);
     setCurrentScene(0);
-    if (audioRef.current && !isMuted) {
-      audioRef.current.play();
-    }
   };
 
   const pausePresentation = () => {
     setIsPlaying(false);
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-  };
-
-  const toggleMute = () => {
-    setIsMuted(!isMuted);
-    if (audioRef.current) {
-      audioRef.current.muted = !isMuted;
-    }
   };
 
   const CurrentSceneComponent = scenes[currentScene]?.component || IntroScene;
 
   return (
     <div className="w-full h-screen relative bg-background overflow-hidden">
-      {/* Audio */}
-      <audio
-        ref={audioRef}
-        loop
-        muted={isMuted}
-        className="hidden"
-      >
-        <source src="data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAAAR0ZW4AcGVuAEQAYQB0AGEAcwBhAGEAcwBhAGEA" />
-      </audio>
-
-      {/* 3D Canvas */}
+      {/* 3D Canvas with Error Boundary */}
       <Canvas
-        ref={canvasRef}
         className="w-full h-full"
         gl={{ 
           antialias: true, 
@@ -105,37 +328,19 @@ export const Portfolio3D = ({ userData }: Portfolio3DProps) => {
           powerPreference: "high-performance"
         }}
         dpr={[1, 2]}
+        camera={{ position: [0, 0, 10], fov: 75 }}
       >
         <Suspense fallback={null}>
-          <PerspectiveCamera makeDefault position={[0, 0, 10]} fov={75} />
-          
           {/* Lighting */}
           <ambientLight intensity={0.3} color="#00ffff" />
           <pointLight position={[10, 10, 10]} intensity={1} color="#00ffff" />
           <pointLight position={[-10, -10, -10]} intensity={0.5} color="#ff00ff" />
-          <spotLight
-            position={[0, 10, 0]}
-            angle={0.3}
-            penumbra={1}
-            intensity={1}
-            color="#ffffff"
-            castShadow
-          />
-
-          {/* Environment */}
-          <Environment preset="city" background={false} />
           
           {/* Grid Background */}
           <gridHelper args={[100, 100, "#00ffff", "#444444"]} position={[0, -5, 0]} />
           
           {/* Current Scene */}
-          <group>
-            <CurrentSceneComponent 
-              userData={userData} 
-              isActive={isPlaying}
-              sceneIndex={currentScene}
-            />
-          </group>
+          <CurrentSceneComponent userData={userData} />
 
           {/* Floating particles */}
           {Array.from({ length: 20 }).map((_, i) => (
@@ -191,14 +396,6 @@ export const Portfolio3D = ({ userData }: Portfolio3DProps) => {
             size="lg"
           >
             {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-          </Button>
-          
-          <Button
-            onClick={toggleMute}
-            variant="cyber"
-            size="lg"
-          >
-            {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
           </Button>
 
           <div className="flex gap-2">
