@@ -1,10 +1,12 @@
 import { Suspense, useRef, useState, useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, PerspectiveCamera, Environment, Center, Float, Sphere, Text } from "@react-three/drei";
+import { OrbitControls, Center, Float, Sphere, Text } from "@react-three/drei";
 import { motion, AnimatePresence } from "framer-motion";
 import * as THREE from "three";
 import { Button } from "../ui/button";
 import { Play, Pause, Volume2, VolumeX } from "lucide-react";
+
+console.log("Portfolio3D component loading...");
 
 interface Portfolio3DProps {
   userData: {
@@ -24,6 +26,7 @@ interface Portfolio3DProps {
 
 // Simple text-based scenes to avoid font loading issues
 const IntroScene = ({ userData }: { userData: Portfolio3DProps['userData'] }) => {
+  console.log("IntroScene rendering with userData:", userData);
   const groupRef = useRef<THREE.Group>(null);
 
   return (
@@ -51,10 +54,6 @@ const IntroScene = ({ userData }: { userData: Portfolio3DProps['userData'] }) =>
           anchorY="middle"
         >
           {userData.name}
-          <meshStandardMaterial
-            emissive="#00ffff"
-            emissiveIntensity={0.3}
-          />
         </Text>
       </Center>
 
@@ -67,10 +66,6 @@ const IntroScene = ({ userData }: { userData: Portfolio3DProps['userData'] }) =>
           anchorY="middle"
         >
           {userData.title}
-          <meshStandardMaterial
-            emissive="#ff00ff"
-            emissiveIntensity={0.2}
-          />
         </Text>
       </Center>
 
@@ -83,10 +78,6 @@ const IntroScene = ({ userData }: { userData: Portfolio3DProps['userData'] }) =>
           anchorY="middle"
         >
           {userData.field}
-          <meshStandardMaterial
-            emissive="#ffffff"
-            emissiveIntensity={0.1}
-          />
         </Text>
       </Center>
 
@@ -281,6 +272,7 @@ const ContactScene = ({ userData }: { userData: Portfolio3DProps['userData'] }) 
 };
 
 export const Portfolio3D = ({ userData }: Portfolio3DProps) => {
+  console.log("Portfolio3D rendering with userData:", userData);
   const [currentScene, setCurrentScene] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
